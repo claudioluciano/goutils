@@ -21,15 +21,7 @@ type Service struct {
 	*db.DB
 }
 
-type NewServiceOpts struct {
-	DBHost     string
-	DBPort     string
-	DBName     string
-	DBUser     string
-	DBPassword string
-}
-
-func NewService(opts *NewServiceOpts, migrations ...interface{}) (*Service, error) {
+func NewService(migrations ...interface{}) (*Service, error) {
 	lg := logger.NewLogger(nil)
 
 	svc := &Service{
