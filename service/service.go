@@ -22,12 +22,12 @@ type Service struct {
 }
 
 type NewServiceOpts struct {
-	migrations []interface{}
+	Migrations []interface{}
 }
 
 func NewService(opts ...*NewServiceOpts) (*Service, error) {
 	opt := &NewServiceOpts{
-		migrations: nil,
+		Migrations: nil,
 	}
 
 	if len(opts) != 0 {
@@ -49,7 +49,7 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
 		User:     getEnv("POSTGRES_DBUSER", "root"),
 		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
-	}, opt.migrations...)
+	}, opt.Migrations...)
 	if err != nil {
 		return nil, err
 	}
