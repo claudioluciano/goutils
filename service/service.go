@@ -34,8 +34,8 @@ func NewService(migrations ...interface{}) (*Service, error) {
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
 		Port:     getEnv("POSTGRES_POST", "5432"),
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
-		User:     getEnv("POSTGRES_DBNAME", "root"),
-		Password: getEnv("POSTGRES_DBNAME", "qwerty"),
+		User:     getEnv("POSTGRES_DBUSER", "root"),
+		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
 	}, migrations)
 	if err != nil {
 		return nil, err
