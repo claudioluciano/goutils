@@ -42,7 +42,7 @@ func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 }
 
 func (db *DB) AutoMigrate(models ...interface{}) error {
-	return db.gormDB.AutoMigrate(models)
+	return db.gormDB.AutoMigrate(models...)
 }
 
 func (db *DB) Create(target interface{}) error {

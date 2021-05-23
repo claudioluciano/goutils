@@ -64,7 +64,7 @@ func (s *Service) dbInitialize(opts *db.NewPostgresOpts, migrations ...interface
 	}
 
 	if migrations != nil {
-		mErr := db.AutoMigrate(migrations)
+		mErr := db.AutoMigrate(migrations...)
 		if mErr != nil {
 			return mErr
 		}
