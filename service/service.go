@@ -32,7 +32,7 @@ func NewService(migrations ...interface{}) (*Service, error) {
 
 	err := svc.dbInitialize(&db.NewPostgressOpts{
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
-		Port:     getEnv("POSTGRES_POST", "5432"),
+		Port:     getEnv("POSTGRES_PORT", "5432"),
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
 		User:     getEnv("POSTGRES_DBUSER", "root"),
 		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
