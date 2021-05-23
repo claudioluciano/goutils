@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	PORT int = 50051
+	port int = 50051
 )
 
 type Service struct {
@@ -33,17 +33,17 @@ func NewService(opts *NewServiceOpts, migrations ...interface{}) (*Service, erro
 	lg := logger.NewLogger(nil)
 
 	svc := &Service{
-		port:       PORT,
+		port:       port,
 		Logger:     lg,
 		grpcServer: grpc.NewServer(),
 	}
 
 	err := svc.dbInitialize(&db.NewPostgressOpts{
-		Host:     GetEnv("POSTGRES_HOST", "localhost"),
-		Port:     GetEnv("POSTGRES_POST", "5432"),
-		DbName:   GetEnv("POSTGRES_DBNAME", "MyDB"),
-		User:     GetEnv("POSTGRES_DBNAME", "root"),
-		Password: GetEnv("POSTGRES_DBNAME", "qwerty"),
+		Host:     getEnv("POSTGRES_HOST", "localhost"),
+		Port:     getEnv("POSTGRES_POST", "5432"),
+		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
+		User:     getEnv("POSTGRES_DBNAME", "root"),
+		Password: getEnv("POSTGRES_DBNAME", "qwerty"),
 	}, migrations)
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (s *Service) Stop() {
 	s.grpcServer.GracefulStop()
 }
 
-func GetEnv(name string, defaultValue string) string {
+func getEnv(name string, defaultValue string) string {
 	value := os.Getenv(name)
 
 	if defaultValue != "" && value == "" {
