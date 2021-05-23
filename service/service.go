@@ -25,8 +25,8 @@ type NewServiceOpts struct {
 	migrations []interface{}
 }
 
-func NewService(opts ...NewServiceOpts) (*Service, error) {
-	opt := NewServiceOpts{
+func NewService(opts ...*NewServiceOpts) (*Service, error) {
+	opt := &NewServiceOpts{
 		migrations: nil,
 	}
 
