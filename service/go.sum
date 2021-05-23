@@ -29,8 +29,8 @@ github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n
 github.com/cenkalti/backoff v2.2.1+incompatible/go.mod h1:90ReRw6GdpyfrHakVjL/QHaoyV4aDUVVkXQJJJ3NXXM=
 github.com/census-instrumentation/opencensus-proto v0.2.1/go.mod h1:f6KPmirojxKA12rnyqOA5BBL4O983OfeGPqjHWSTneU=
 github.com/cespare/xxhash/v2 v2.1.1/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
-github.com/claudioluciano/goutils/db v0.0.0-20210523084513-2bd48bfa5713 h1:YNNzz/78EIuGWcGbQJerFpU1VjRuUA/Qrm7VIWZ6Yfg=
-github.com/claudioluciano/goutils/db v0.0.0-20210523084513-2bd48bfa5713/go.mod h1:rUcG2j6zAxyfVdZMQzuLIBXyy2V0MKyHE0ZQX9WjA3s=
+github.com/claudioluciano/goutils/db v0.0.0-20210523091727-d41fba275152 h1:+QJDpV5xIgNZSchn/QLenD45EUHngMXX8ADD80xT9W8=
+github.com/claudioluciano/goutils/db v0.0.0-20210523091727-d41fba275152/go.mod h1:rUcG2j6zAxyfVdZMQzuLIBXyy2V0MKyHE0ZQX9WjA3s=
 github.com/claudioluciano/goutils/logger v0.0.0-20210523052317-e3297458a3be/go.mod h1:ChCqwrGUa/oz4u5eCwDn4uVzvH1yiyc2/jh/TR5zpYs=
 github.com/claudioluciano/goutils/logger v0.0.0-20210523090141-170f0a1a5c5a h1:SW7Nyiv5fn6y3tjZUn/llxNyYJLONXx/HuBYeSf1KWI=
 github.com/claudioluciano/goutils/logger v0.0.0-20210523090141-170f0a1a5c5a/go.mod h1:ChCqwrGUa/oz4u5eCwDn4uVzvH1yiyc2/jh/TR5zpYs=
