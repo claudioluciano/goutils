@@ -27,7 +27,7 @@ type NewPostgresOpts struct {
 func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 	// TODO change to environment variable
 
-	dsn := fmt.Sprintf("host=%v port=5432 user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password)
+	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password, opts.DbName)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		opts.Logger.ErrorWithError("db error when initialize the database", err)
