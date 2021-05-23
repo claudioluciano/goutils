@@ -1,4 +1,4 @@
-module github.com/claudioluciano/goutils/utils/logger
+module github.com/claudioluciano/goutils/logger
 
 go 1.16
 
