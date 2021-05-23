@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	port int = 50051
+	defaultPORT int = 50051
 )
 
 type Service struct {
@@ -21,22 +21,35 @@ type Service struct {
 	*db.DB
 }
 
-func NewService(migrations ...interface{}) (*Service, error) {
+type NewServiceOpts struct {
+	migrations []interface{}
+}
+
+func NewService(opts ...NewServiceOpts) (*Service, error) {
+	opt := NewServiceOpts{
+		migrations: nil,
+	}
+
+	if len(opts) != 0 {
+		opt = opts[0]
+	}
+
 	lg := logger.NewLogger(nil)
 
 	svc := &Service{
-		port:       port,
+		port:       defaultPORT,
 		Logger:     lg,
 		grpcServer: grpc.NewServer(),
 	}
 
 	err := svc.dbInitialize(&db.NewPostgresOpts{
+		Logger:   lg,
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
 		Port:     getEnv("POSTGRES_PORT", "5432"),
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
 		User:     getEnv("POSTGRES_DBUSER", "root"),
 		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
-	}, migrations)
+	}, opt.migrations...)
 	if err != nil {
 		return nil, err
 	}
@@ -50,9 +63,11 @@ func (s *Service) dbInitialize(opts *db.NewPostgresOpts, migrations ...interface
 		return err
 	}
 
-	mErr := db.AutoMigrate(migrations)
-	if mErr != nil {
-		return mErr
+	if migrations != nil {
+		mErr := db.AutoMigrate(migrations)
+		if mErr != nil {
+			return mErr
+		}
 	}
 
 	s.DB = db
