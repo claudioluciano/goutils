@@ -30,7 +30,7 @@ func NewService(migrations ...interface{}) (*Service, error) {
 		grpcServer: grpc.NewServer(),
 	}
 
-	err := svc.dbInitialize(&db.NewPostgressOpts{
+	err := svc.dbInitialize(&db.NewPostgresOpts{
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
 		Port:     getEnv("POSTGRES_PORT", "5432"),
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
@@ -44,8 +44,8 @@ func NewService(migrations ...interface{}) (*Service, error) {
 	return svc, nil
 }
 
-func (s *Service) dbInitialize(opts *db.NewPostgressOpts, migrations ...interface{}) error {
-	db, err := db.NewPostgress(opts)
+func (s *Service) dbInitialize(opts *db.NewPostgresOpts, migrations ...interface{}) error {
+	db, err := db.NewPostgres(opts)
 	if err != nil {
 		return err
 	}
