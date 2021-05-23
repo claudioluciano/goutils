@@ -15,7 +15,7 @@ type DB struct {
 	gormDB *gorm.DB
 }
 
-type NewPostgressOpts struct {
+type NewPostgresOpts struct {
 	Host     string
 	Port     string
 	DbName   string
@@ -24,7 +24,7 @@ type NewPostgressOpts struct {
 	Logger   *logger.Logger
 }
 
-func NewPostgress(opts *NewPostgressOpts) (*DB, error) {
+func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 	// TODO change to environment variable
 
 	dsn := fmt.Sprintf("host=%v port=5432 user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password)
