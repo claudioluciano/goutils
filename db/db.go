@@ -119,10 +119,10 @@ func (db *DB) FindByID(target interface{}, id string) error {
 	return nil
 }
 
-func (db *DB) Query(target interface{}, query string, args ...interface{}) error {
+func (db *DB) Query(target interface{}, query string, orderBy string, args ...interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
-		if err := tx.Table(db.table).Where(query, args...).Find(target).Error; err != nil {
+		if err := tx.Table(db.table).Where(query, args...).Order(orderBy).Find(target).Error; err != nil {
 			db.logger.ErrorWithError("db error when query first entity", err)
 			// return any error will rollback
 			return err
