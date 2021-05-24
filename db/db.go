@@ -110,10 +110,10 @@ func (db *DB) FindByID(target interface{}, id string) error {
 	return nil
 }
 
-func (db *DB) FindMany(targets []interface{}, limit int) error {
+func (db *DB) Find(target interface{}, limit int) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
-		if err := tx.Limit(limit).Find(targets).Error; err != nil {
+		if err := tx.Limit(limit).Find(target).Error; err != nil {
 			db.logger.ErrorWithError("db error when find many entity", err)
 
 			// return any error will rollback
@@ -127,27 +127,11 @@ func (db *DB) FindMany(targets []interface{}, limit int) error {
 	return nil
 }
 
-func (db *DB) QueryFirst(query string, target interface{}) error {
+func (db *DB) Query(target interface{}, query string) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Where(query).Find(target).Error; err != nil {
 			db.logger.ErrorWithError("db error when query first entity", err)
-			// return any error will rollback
-			return err
-		}
-
-		// return nil will commit the whole transaction
-		return nil
-	})
-
-	return nil
-}
-
-func (db *DB) QueryMany(query string, targets []interface{}) error {
-	db.gormDB.Transaction(func(tx *gorm.DB) error {
-		// do some database operations in the transaction (use 'tx' from this point, not 'db')
-		if err := tx.Where(query).Find(targets).Error; err != nil {
-			db.logger.ErrorWithError("db error when query many entity", err)
 			// return any error will rollback
 			return err
 		}
