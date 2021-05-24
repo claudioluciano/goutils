@@ -3,6 +3,7 @@ package db
 import (
 	"fmt"
 
+	"github.com/lithammer/shortuuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 
@@ -43,10 +44,6 @@ func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 
 func (db *DB) GormDB() *gorm.DB {
 	return db.gormDB
-}
-
-func (db *DB) CreateTable() error {
-	return db.gormDB.Migrator().CreateTable(db.table)
 }
 
 func (db *DB) DropTable() error {
@@ -153,4 +150,16 @@ func (db *DB) Exec(raw string, args ...interface{}) error {
 	})
 
 	return nil
+}
+
+func (db *DB) NewID(prefix string) string {
+	var newID string
+
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	newID = shortuuid.New()
+
+	return prefix + newID
 }
