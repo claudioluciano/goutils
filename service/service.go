@@ -24,8 +24,9 @@ type Service struct {
 }
 
 type NewServiceOpts struct {
-	ServiceName string
-	Migrations  []interface{}
+	ServiceName   string
+	AutoMigration bool
+	Migrations    []interface{}
 }
 
 func NewService(opts ...*NewServiceOpts) (*Service, error) {
@@ -54,7 +55,7 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
 		User:     getEnv("POSTGRES_DBUSER", "root"),
 		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
-	}, opt.Migrations...)
+	}, opt.AutoMigration, opt.Migrations...)
 	if err != nil {
 		return nil, err
 	}
@@ -62,13 +63,13 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 	return svc, nil
 }
 
-func (s *Service) dbInitialize(opts *db.NewPostgresOpts, migrations ...interface{}) error {
+func (s *Service) dbInitialize(opts *db.NewPostgresOpts, autoMigration bool, migrations ...interface{}) error {
 	db, err := db.NewPostgres(opts)
 	if err != nil {
 		return err
 	}
 
-	if migrations != nil {
+	if autoMigration && migrations != nil {
 		mErr := db.AutoMigrate(migrations...)
 		if mErr != nil {
 			return mErr

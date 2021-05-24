@@ -45,8 +45,16 @@ func (db *DB) GormDB() *gorm.DB {
 	return db.gormDB
 }
 
+func (db *DB) CreateTable() error {
+	return db.gormDB.Migrator().CreateTable(db.table)
+}
+
+func (db *DB) DropTable() error {
+	return db.gormDB.Migrator().DropTable(db.table)
+}
+
 func (db *DB) AutoMigrate(models ...interface{}) error {
-	return db.gormDB.AutoMigrate(models...)
+	return db.gormDB.Migrator().AutoMigrate(models...)
 }
 
 func (db *DB) Create(target interface{}) error {
