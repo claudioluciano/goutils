@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/claudioluciano/goutils/db"
 	"github.com/claudioluciano/goutils/logger"
@@ -15,6 +16,7 @@ const (
 )
 
 type Service struct {
+	name       string
 	port       int
 	grpcServer *grpc.Server
 	*logger.Logger
@@ -22,7 +24,8 @@ type Service struct {
 }
 
 type NewServiceOpts struct {
-	Migrations []interface{}
+	ServiceName string
+	Migrations  []interface{}
 }
 
 func NewService(opts ...*NewServiceOpts) (*Service, error) {
@@ -37,12 +40,14 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 	lg := logger.NewLogger(nil)
 
 	svc := &Service{
+		name:       opt.ServiceName,
 		port:       defaultPORT,
 		Logger:     lg,
 		grpcServer: grpc.NewServer(),
 	}
 
 	err := svc.dbInitialize(&db.NewPostgresOpts{
+		Table:    strings.ToLower(opt.ServiceName),
 		Logger:   lg,
 		Host:     getEnv("POSTGRES_HOST", "localhost"),
 		Port:     getEnv("POSTGRES_PORT", "5432"),
