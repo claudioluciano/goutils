@@ -100,6 +100,7 @@ func (s *Service) ClientConnection(name string) *grpc.ClientConn {
 	// Create client connection
 	conn, err := grpc.Dial(
 		address,
+		grpc.WithInsecure(),
 	)
 	if err != nil {
 		s.Logger.FatalWithFields("could not create client connection", map[string]interface{}{
