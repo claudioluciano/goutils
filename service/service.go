@@ -12,12 +12,12 @@ import (
 )
 
 const (
-	defaultPORT int = 50051
+	defaultPORT int32 = 50051
 )
 
 type Service struct {
 	name       string
-	port       int
+	port       int32
 	grpcServer *grpc.Server
 	*logger.Logger
 	*db.DB
@@ -82,6 +82,26 @@ func (s *Service) dbInitialize(opts *db.NewPostgresOpts, autoMigration bool, mig
 
 func (s *Service) getPortAsString() string {
 	return fmt.Sprintf(":%v", s.port)
+}
+
+func (s *Service) ClientConnection(name string) *grpc.ClientConn {
+	// Build connection URI from name and live mode
+	address := fmt.Sprintf("%s:%d", name, defaultPORT)
+
+	// Create client connection
+	conn, err := grpc.Dial(
+		address,
+	)
+	if err != nil {
+		s.Logger.FatalWithFields("could not create client connection", map[string]interface{}{
+			"name":    name,
+			"address": address,
+			"port":    defaultPORT,
+		})
+		return nil
+	}
+
+	return conn
 }
 
 func (s *Service) GRPCServer() *grpc.Server {
