@@ -60,3 +60,11 @@ func (l *Logger) Debug(message string) {
 func (l *Logger) DebugWithFields(message string, fields map[string]interface{}) {
 	l.internalLogger.WithFields(fields).Debug(message)
 }
+
+func (l *Logger) Fatal(message string) {
+	l.internalLogger.Fatal(message)
+}
+
+func (l *Logger) FatalWithFields(message string, fields map[string]interface{}) {
+	l.internalLogger.WithFields(fields).Fatal(message)
+}
