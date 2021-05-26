@@ -101,6 +101,10 @@ func (h *HTTPClient) SendRequest(ctx context.Context, opts *SendRequestOpts) (*H
 		req.Header.Set(key, value)
 	}
 
+	if err := h.Client.DoTimeout(req, res, h.timeout); err != nil {
+		return nil, err
+	}
+
 	endNow := time.Now()
 
 	return &HTTPResponse{
