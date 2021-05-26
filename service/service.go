@@ -24,14 +24,21 @@ type Service struct {
 }
 
 type NewServiceOpts struct {
-	ServiceName   string
+	ServiceName string
+	Database    *DatabaseOpts
+}
+
+type DatabaseOpts struct {
+	Enabled       bool
 	AutoMigration bool
 	Migrations    []interface{}
 }
 
 func NewService(opts ...*NewServiceOpts) (*Service, error) {
 	opt := &NewServiceOpts{
-		Migrations: nil,
+		Database: &DatabaseOpts{
+			Enabled: false,
+		},
 	}
 
 	if len(opts) != 0 {
@@ -47,17 +54,19 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 		grpcServer: grpc.NewServer(),
 	}
 
-	err := svc.dbInitialize(&db.NewPostgresOpts{
-		Table:    strings.ToLower(opt.ServiceName),
-		Logger:   lg,
-		Host:     getEnv("POSTGRES_HOST", "localhost"),
-		Port:     getEnv("POSTGRES_PORT", "5432"),
-		DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
-		User:     getEnv("POSTGRES_DBUSER", "root"),
-		Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
-	}, opt.AutoMigration, opt.Migrations...)
-	if err != nil {
-		return nil, err
+	if opt.Database.Enabled {
+		err := svc.dbInitialize(&db.NewPostgresOpts{
+			Table:    strings.ToLower(opt.ServiceName),
+			Logger:   lg,
+			Host:     getEnv("POSTGRES_HOST", "localhost"),
+			Port:     getEnv("POSTGRES_PORT", "5432"),
+			DbName:   getEnv("POSTGRES_DBNAME", "MyDB"),
+			User:     getEnv("POSTGRES_DBUSER", "root"),
+			Password: getEnv("POSTGRES_DBPASSWORD", "qwerty"),
+		}, opt.Database.AutoMigration, opt.Database.Migrations...)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return svc, nil
