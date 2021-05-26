@@ -76,7 +76,7 @@ func NewHTTPClient(opts ...*NewOpts) *HTTPClient {
 }
 
 func (h *HTTPClient) SendRequest(ctx context.Context, opts *SendRequestOpts) (*HTTPResponse, error) {
-	if opts.StartTime != nil {
+	if opts.StartTime == nil {
 		n := time.Now()
 		opts.StartTime = &n
 	}
