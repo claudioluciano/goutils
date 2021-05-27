@@ -39,7 +39,7 @@ type HTTPClient struct {
 	timeout     time.Duration
 }
 
-type NewOpts struct {
+type NewClientOpts struct {
 	BaseURI            string
 	DefaultContentType string
 	Timeout            time.Duration
@@ -52,8 +52,8 @@ type SendRequestOpts struct {
 	Request   *HTTPRequest
 }
 
-func NewHTTPClient(opts ...*NewOpts) *HTTPClient {
-	opt := &NewOpts{
+func NewHTTPClient(opts ...*NewClientOpts) *HTTPClient {
+	opt := &NewClientOpts{
 		DefaultContentType: "application/json",
 		Timeout:            30 * time.Second,
 		Attemps:            5,

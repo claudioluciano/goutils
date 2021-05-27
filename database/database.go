@@ -1,11 +1,13 @@
-package db
+package database
 
 import (
 	"fmt"
 
 	"github.com/lithammer/shortuuid"
 	"gorm.io/driver/postgres"
+	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/schema"
 
 	"github.com/claudioluciano/goutils/logger"
 )
@@ -20,17 +22,21 @@ type NewPostgresOpts struct {
 	Table    string
 	Host     string
 	Port     string
-	DbName   string
+	DBName   string
 	User     string
 	Password string
 	Logger   *logger.Logger
 }
 
 func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
-	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password, opts.DbName)
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password, opts.DBName)
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
 	if err != nil {
-		opts.Logger.ErrorWithError("db error when initialize the database", err)
+		opts.Logger.Error("db error when initialize the database", err)
 
 		return nil, err
 	}
@@ -40,6 +46,32 @@ func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 		logger: opts.Logger,
 		gormDB: db,
 	}, nil
+}
+
+type NewSqliteOpts struct {
+	Table  string
+	DBName string
+	Logger *logger.Logger
+}
+
+func NewSqlite(opts *NewSqliteOpts) (*DB, error) {
+	db, err := gorm.Open(sqlite.Open(opts.DBName), &gorm.Config{
+		NamingStrategy: schema.NamingStrategy{
+			SingularTable: true,
+		},
+	})
+	if err != nil {
+		opts.Logger.Error("db error when initialize the database", err)
+
+		return nil, err
+	}
+
+	return &DB{
+		table:  opts.Table,
+		logger: opts.Logger,
+		gormDB: db,
+	}, nil
+
 }
 
 func (db *DB) GormDB() *gorm.DB {
@@ -58,8 +90,7 @@ func (db *DB) Create(target interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Create(target).Error; err != nil {
-			db.logger.ErrorWithError("db error when create entity", err)
-
+			db.logger.Error("db error when create entity", err)
 			// return any error will rollback
 			return err
 		}
@@ -75,7 +106,7 @@ func (db *DB) Update(target interface{}, newValues interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Model(target).Updates(newValues).Error; err != nil {
-			db.logger.ErrorWithError("db error when update entity", err)
+			db.logger.Error("db error when update entity", err)
 			// return any error will rollback
 			return err
 		}
@@ -91,7 +122,7 @@ func (db *DB) Delete(target interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Delete(target).Error; err != nil {
-			db.logger.ErrorWithError("db error when delete entity", err)
+			db.logger.Error("db error when delete entity", err)
 			// return any error will rollback
 			return err
 		}
@@ -107,7 +138,7 @@ func (db *DB) FindByID(target interface{}, id string) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).First(target, "id = ?", id).Error; err != nil {
-			db.logger.ErrorWithError("db error when find by id entity", err)
+			db.logger.Error("db error when find by id entity", err)
 			// return any error will rollback
 			return err
 		}
@@ -128,7 +159,7 @@ func (db *DB) Query(target interface{}, query string, orderBy string, args ...in
 		}
 
 		if err := q.Find(target).Error; err != nil {
-			db.logger.ErrorWithError("db error when query first entity", err)
+			db.logger.Error("db error when query first entity", err)
 			// return any error will rollback
 			return err
 		}
@@ -144,8 +175,7 @@ func (db *DB) Exec(raw string, args ...interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Exec(raw, args...).Error; err != nil {
-			db.logger.ErrorWithError("db error when create entity", err)
-
+			db.logger.Error("db error when create entity", err)
 			// return any error will rollback
 			return err
 		}
