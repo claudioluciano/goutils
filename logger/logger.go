@@ -1,70 +1,77 @@
 package logger
 
 import (
-	"github.com/sirupsen/logrus"
+	"os"
+
+	"github.com/hashicorp/go-hclog"
 )
 
 type Logger struct {
-	internalLogger *logrus.Logger
+	logger hclog.Logger
 }
 
 type NewLoggerOpts struct {
-	LogLevel logrus.Level
+	Name  string
+	Level hclog.Level
 }
 
-func NewLogger(opts *NewLoggerOpts) *Logger {
-	if opts == nil {
-		opts = &NewLoggerOpts{
-			LogLevel: logrus.InfoLevel,
-		}
+func NewLogger(opts ...*NewLoggerOpts) *Logger {
+	opt := &NewLoggerOpts{
+		Level: hclog.Info,
 	}
 
-	baseLogger := logrus.New()
+	if len(opts) > 0 {
+		opt = opts[0]
+	}
 
-	logger := &Logger{internalLogger: baseLogger}
+	hclogger := hclog.New(&hclog.LoggerOptions{
+		Name:  opt.Name,
+		Level: opt.Level,
+	})
 
-	logger.internalLogger.Level = opts.LogLevel
-	logger.internalLogger.Formatter = &logrus.JSONFormatter{}
-
-	return logger
+	return &Logger{
+		logger: hclogger,
+	}
 }
 
-func (l *Logger) Info(message string) {
-	l.internalLogger.Info(message)
+func (l *Logger) Info(message string, args ...interface{}) {
+	l.logger.Info(message, args...)
 }
 
-func (l *Logger) InfoWithFields(message error, fields map[string]interface{}) {
-	l.internalLogger.WithFields(fields).Info(message)
+func (l *Logger) Warn(message string, args ...interface{}) {
+	l.logger.Warn(message, args...)
 }
 
-func (l *Logger) Warn(message string) {
-	l.internalLogger.Warn(message)
+func (l *Logger) Error(message string, args ...interface{}) {
+	l.logger.Error(message, args...)
 }
 
-func (l *Logger) WarnWithFields(message error, fields map[string]interface{}) {
-	l.internalLogger.WithFields(fields).Warn(message)
+func (l *Logger) Debug(message string, args ...interface{}) {
+	l.logger.Debug(message, args...)
 }
 
-func (l *Logger) Error(message string) {
-	l.internalLogger.Error(message)
+func (l *Logger) Fatal(message string, args ...interface{}) {
+	l.logger.Log(hclog.LevelFromString("FATAL"), message, args...)
+
+	l.exit()
 }
 
-func (l *Logger) ErrorWithError(message string, err error) {
-	l.internalLogger.WithError(err).Error(message)
+func (l *Logger) exit() {
+	os.Exit(1)
 }
 
-func (l *Logger) Debug(message string) {
-	l.internalLogger.Debug(message)
+func LevelInfo() hclog.Level {
+	return hclog.Info
 }
 
-func (l *Logger) DebugWithFields(message string, fields map[string]interface{}) {
-	l.internalLogger.WithFields(fields).Debug(message)
+func LevelWarn() hclog.Level {
+	return hclog.Warn
 }
 
-func (l *Logger) Fatal(message string) {
-	l.internalLogger.Fatal(message)
+func LevelError() hclog.Level {
+	return hclog.Error
 }
 
-func (l *Logger) FatalWithFields(message string, fields map[string]interface{}) {
-	l.internalLogger.WithFields(fields).Fatal(message)
+func LevelDebug() hclog.Level {
+	return hclog.Debug
 }
