@@ -44,7 +44,7 @@ type Service struct {
 type NewServiceOptions struct {
 	ServiceName string
 	Environment ServiceEnvironment
-	Database    *DatabaseOpts
+	Database    *DatabaseOptions
 }
 
 type GormOptions struct {
@@ -52,7 +52,7 @@ type GormOptions struct {
 	Migrations    []interface{}
 }
 
-type DatabaseOpts struct {
+type DatabaseOptions struct {
 	Disabled bool
 	Type     ServiceDatabaseType
 	*GormOptions
@@ -61,7 +61,7 @@ type DatabaseOpts struct {
 func NewService(opts ...*NewServiceOptions) (*Service, error) {
 	opt := &NewServiceOptions{
 		Environment: ENV_DEVELOPMENT,
-		Database: &DatabaseOpts{
+		Database: &DatabaseOptions{
 			Disabled: true,
 		},
 	}
