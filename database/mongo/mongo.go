@@ -24,6 +24,8 @@ type Client struct {
 type NewClientOptions struct {
 	Host           string
 	Port           string
+	User           string
+	Password       string
 	DatabaseName   string
 	CollectionName string
 	Logger         *logger.Client
@@ -32,7 +34,7 @@ type NewClientOptions struct {
 
 func NewClient(opts *NewClientOptions) (*Client, error) {
 	ctx := context.TODO()
-	clientOpts := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s", opts.Host, opts.Port))
+	clientOpts := options.Client().ApplyURI(fmt.Sprintf("mongodb://%s:%s@%s:%s", opts.User, opts.Password, opts.Host, opts.Port))
 
 	mongoClient, err := mongo.Connect(ctx, clientOpts)
 	if err != nil {

@@ -149,6 +149,8 @@ func (s *Service) mongoInitialize(opt *NewServiceOptions) error {
 	db, err := mongo.NewClient(&mongo.NewClientOptions{
 		Host:           getEnv("MONGO_HOST", "localhost"),
 		Port:           getEnv("MONGO_PORT", "27017"),
+		User:           getEnv("MONGO_USER", "root"),
+		Password:       getEnv("MONGO_PASSWORD", "qwerty"),
 		DatabaseName:   getEnv("MONGO_DB_NAME", "mydb"),
 		CollectionName: s.name,
 		Logger:         s.logger,
