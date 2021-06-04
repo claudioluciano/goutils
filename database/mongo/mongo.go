@@ -76,3 +76,11 @@ func (c *Client) collection() *mongo.Collection {
 	db := c.database()
 	return db.Collection(c.collectionName)
 }
+
+func (c *Client) DropDatabase(ctx context.Context) error {
+	return c.database().Drop(ctx)
+}
+
+func (c *Client) DropCollection(ctx context.Context) error {
+	return c.collection().Drop(ctx)
+}
