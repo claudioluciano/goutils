@@ -1,9 +1,8 @@
-package database
+package gorm
 
 import (
 	"fmt"
 
-	"github.com/lithammer/shortuuid"
 	"gorm.io/driver/postgres"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -12,9 +11,9 @@ import (
 	"github.com/claudioluciano/goutils/logger"
 )
 
-type DB struct {
+type Client struct {
 	table  string
-	logger *logger.Logger
+	logger *logger.Client
 	gormDB *gorm.DB
 }
 
@@ -25,10 +24,10 @@ type NewPostgresOpts struct {
 	DBName   string
 	User     string
 	Password string
-	Logger   *logger.Logger
+	Logger   *logger.Client
 }
 
-func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
+func NewPostgres(opts *NewPostgresOpts) (*Client, error) {
 	dsn := fmt.Sprintf("host=%v port=%v user=%v password=%v dbname=%v", opts.Host, opts.Port, opts.User, opts.Password, opts.DBName)
 	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
@@ -41,7 +40,7 @@ func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{
+	return &Client{
 		table:  opts.Table,
 		logger: opts.Logger,
 		gormDB: db,
@@ -51,10 +50,10 @@ func NewPostgres(opts *NewPostgresOpts) (*DB, error) {
 type NewSqliteOpts struct {
 	Table  string
 	DBName string
-	Logger *logger.Logger
+	Logger *logger.Client
 }
 
-func NewSqlite(opts *NewSqliteOpts) (*DB, error) {
+func NewSqlite(opts *NewSqliteOpts) (*Client, error) {
 	db, err := gorm.Open(sqlite.Open(opts.DBName), &gorm.Config{
 		NamingStrategy: schema.NamingStrategy{
 			SingularTable: true,
@@ -66,27 +65,26 @@ func NewSqlite(opts *NewSqliteOpts) (*DB, error) {
 		return nil, err
 	}
 
-	return &DB{
+	return &Client{
 		table:  opts.Table,
 		logger: opts.Logger,
 		gormDB: db,
 	}, nil
-
 }
 
-func (db *DB) GormDB() *gorm.DB {
+func (db *Client) GormDB() *gorm.DB {
 	return db.gormDB
 }
 
-func (db *DB) DropTable() error {
+func (db *Client) DropTable() error {
 	return db.gormDB.Migrator().DropTable(db.table)
 }
 
-func (db *DB) AutoMigrate(models ...interface{}) error {
+func (db *Client) AutoMigrate(models ...interface{}) error {
 	return db.gormDB.Migrator().AutoMigrate(models...)
 }
 
-func (db *DB) Create(target interface{}) error {
+func (db *Client) Create(target interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Create(target).Error; err != nil {
@@ -102,7 +100,7 @@ func (db *DB) Create(target interface{}) error {
 	return nil
 }
 
-func (db *DB) Update(target interface{}, newValues interface{}) error {
+func (db *Client) Update(target interface{}, newValues interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Model(target).Updates(newValues).Error; err != nil {
@@ -118,7 +116,7 @@ func (db *DB) Update(target interface{}, newValues interface{}) error {
 	return nil
 }
 
-func (db *DB) Delete(target interface{}) error {
+func (db *Client) Delete(target interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).Delete(target).Error; err != nil {
@@ -134,7 +132,7 @@ func (db *DB) Delete(target interface{}) error {
 	return nil
 }
 
-func (db *DB) FindByID(target interface{}, id string) error {
+func (db *Client) FindByID(target interface{}, id string) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Table(db.table).First(target, "id = ?", id).Error; err != nil {
@@ -150,7 +148,7 @@ func (db *DB) FindByID(target interface{}, id string) error {
 	return nil
 }
 
-func (db *DB) Query(target interface{}, query string, orderBy string, args ...interface{}) error {
+func (db *Client) Query(target interface{}, query string, orderBy string, args ...interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		q := tx.Table(db.table).Where(query, args...)
@@ -171,7 +169,7 @@ func (db *DB) Query(target interface{}, query string, orderBy string, args ...in
 	return nil
 }
 
-func (db *DB) Exec(raw string, args ...interface{}) error {
+func (db *Client) Exec(raw string, args ...interface{}) error {
 	db.gormDB.Transaction(func(tx *gorm.DB) error {
 		// do some database operations in the transaction (use 'tx' from this point, not 'db')
 		if err := tx.Exec(raw, args...).Error; err != nil {
@@ -185,16 +183,4 @@ func (db *DB) Exec(raw string, args ...interface{}) error {
 	})
 
 	return nil
-}
-
-func (db *DB) NewID(prefix string) string {
-	var newID string
-
-	if prefix != "" {
-		prefix += "_"
-	}
-
-	newID = shortuuid.New()
-
-	return prefix + newID
 }

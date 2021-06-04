@@ -6,7 +6,7 @@ import (
 	"github.com/hashicorp/go-hclog"
 )
 
-type Logger struct {
+type Client struct {
 	logger hclog.Logger
 }
 
@@ -15,7 +15,7 @@ type NewLoggerOpts struct {
 	Level hclog.Level
 }
 
-func NewLogger(opts ...*NewLoggerOpts) *Logger {
+func NewLogger(opts ...*NewLoggerOpts) *Client {
 	opt := &NewLoggerOpts{
 		Level: hclog.Info,
 	}
@@ -29,34 +29,34 @@ func NewLogger(opts ...*NewLoggerOpts) *Logger {
 		Level: opt.Level,
 	})
 
-	return &Logger{
+	return &Client{
 		logger: hclogger,
 	}
 }
 
-func (l *Logger) Info(message string, args ...interface{}) {
+func (l *Client) Info(message string, args ...interface{}) {
 	l.logger.Info(message, args...)
 }
 
-func (l *Logger) Warn(message string, args ...interface{}) {
+func (l *Client) Warn(message string, args ...interface{}) {
 	l.logger.Warn(message, args...)
 }
 
-func (l *Logger) Error(message string, args ...interface{}) {
+func (l *Client) Error(message string, args ...interface{}) {
 	l.logger.Error(message, args...)
 }
 
-func (l *Logger) Debug(message string, args ...interface{}) {
+func (l *Client) Debug(message string, args ...interface{}) {
 	l.logger.Debug(message, args...)
 }
 
-func (l *Logger) Fatal(message string, args ...interface{}) {
+func (l *Client) Fatal(message string, args ...interface{}) {
 	l.logger.Log(hclog.LevelFromString("FATAL"), message, args...)
 
 	l.exit()
 }
 
-func (l *Logger) exit() {
+func (l *Client) exit() {
 	os.Exit(1)
 }
 

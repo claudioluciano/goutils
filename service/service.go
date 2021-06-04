@@ -6,43 +6,60 @@ import (
 	"os"
 	"strings"
 
-	"github.com/claudioluciano/goutils/database"
+	"github.com/claudioluciano/goutils/database/gorm"
+	"github.com/claudioluciano/goutils/database/mongo"
+	"github.com/claudioluciano/goutils/errors"
 	"github.com/claudioluciano/goutils/logger"
+	"github.com/lithammer/shortuuid"
 	"google.golang.org/grpc"
 )
 
 type ServiceEnvironment string
+type ServiceDatabaseType string
 
 const (
-	defaultPORT     int32              = 50051
-	ENV_PRODUCTION  ServiceEnvironment = "PRODUCTION"
-	ENV_TEST        ServiceEnvironment = "TEST"
-	ENV_DEVELOPMENT ServiceEnvironment = "DEVELOPMENT"
+	defaultPORT     int32               = 50051
+	ENV_PRODUCTION  ServiceEnvironment  = "PRODUCTION"
+	ENV_TEST        ServiceEnvironment  = "TEST"
+	ENV_DEVELOPMENT ServiceEnvironment  = "DEVELOPMENT"
+	DATABASE_MONGO  ServiceDatabaseType = "MONGO"
+	DATABASE_GORM   ServiceDatabaseType = "GORM"
 )
+
+type ServiceDatabase struct {
+	gorm  *gorm.Client
+	mongo *mongo.Client
+}
 
 type Service struct {
 	name        string
 	port        int32
 	environment ServiceEnvironment
 	grpcServer  *grpc.Server
-	logger      *logger.Logger
-	db          *database.DB
+	logger      *logger.Client
+	errors      *errors.Client
+	db          *ServiceDatabase
 }
 
-type NewServiceOpts struct {
+type NewServiceOptions struct {
 	ServiceName string
 	Environment ServiceEnvironment
 	Database    *DatabaseOpts
 }
 
-type DatabaseOpts struct {
-	Disabled      bool
+type GormOptions struct {
 	AutoMigration bool
 	Migrations    []interface{}
 }
 
-func NewService(opts ...*NewServiceOpts) (*Service, error) {
-	opt := &NewServiceOpts{
+type DatabaseOpts struct {
+	Disabled bool
+	Type     ServiceDatabaseType
+	*GormOptions
+}
+
+func NewService(opts ...*NewServiceOptions) (*Service, error) {
+	opt := &NewServiceOptions{
 		Environment: ENV_DEVELOPMENT,
 		Database: &DatabaseOpts{
 			Disabled: true,
@@ -67,18 +84,26 @@ func NewService(opts ...*NewServiceOpts) (*Service, error) {
 	}
 
 	if !opt.Database.Disabled {
-		if err := svc.dbInitialize(opt); err != nil {
-			return nil, err
+		if opt.Database.Type == DATABASE_GORM {
+			if err := svc.gormInitialize(opt); err != nil {
+				return nil, err
+			}
+		}
+
+		if opt.Database.Type == DATABASE_MONGO {
+			if err := svc.mongoInitialize(opt); err != nil {
+				return nil, err
+			}
 		}
 	}
 
 	return svc, nil
 }
 
-func (s *Service) dbInitialize(opt *NewServiceOpts) error {
-	var db *database.DB
+func (s *Service) gormInitialize(opt *NewServiceOptions) error {
+	var db *gorm.Client
 	if opt.Environment == ENV_PRODUCTION {
-		idb, err := database.NewPostgres(&database.NewPostgresOpts{
+		idb, err := gorm.NewPostgres(&gorm.NewPostgresOpts{
 			Table:    strings.ToLower(s.name),
 			Logger:   s.Logger(),
 			Host:     getEnv("POSTGRES_HOST", "localhost"),
@@ -95,7 +120,7 @@ func (s *Service) dbInitialize(opt *NewServiceOpts) error {
 	}
 
 	if opt.Environment != ENV_PRODUCTION {
-		idb, err := database.NewSqlite(&database.NewSqliteOpts{
+		idb, err := gorm.NewSqlite(&gorm.NewSqliteOpts{
 			Table:  strings.ToLower(s.name),
 			Logger: s.Logger(),
 			DBName: strings.ToLower(fmt.Sprintf("%v.db", s.name)),
@@ -114,12 +139,30 @@ func (s *Service) dbInitialize(opt *NewServiceOpts) error {
 		}
 	}
 
-	s.db = db
+	s.db = &ServiceDatabase{
+		gorm: db,
+	}
 	return nil
 }
 
-func (s *Service) getPortAsString() string {
-	return fmt.Sprintf(":%v", s.port)
+func (s *Service) mongoInitialize(opt *NewServiceOptions) error {
+	db, err := mongo.NewClient(&mongo.NewClientOptions{
+		Host:           getEnv("MONGO_HOST", "localhost"),
+		Port:           getEnv("MONGO_PORT", "27017"),
+		DatabaseName:   getEnv("MONGO_DB_NAME", "mydb"),
+		CollectionName: s.name,
+		Logger:         s.logger,
+		Errors:         s.errors,
+	})
+	if err != nil {
+		return err
+	}
+
+	s.db = &ServiceDatabase{
+		mongo: db,
+	}
+
+	return nil
 }
 
 func (s *Service) ClientConnection(name string) *grpc.ClientConn {
@@ -136,12 +179,24 @@ func (s *Service) ClientConnection(name string) *grpc.ClientConn {
 	return conn
 }
 
+func (s *Service) Gorm() *gorm.Client {
+	return s.db.gorm
+}
+
+func (s *Service) Mongo() *mongo.Client {
+	return s.db.mongo
+}
+
 func (s *Service) GRPCServer() *grpc.Server {
 	return s.grpcServer
 }
 
-func (s *Service) Logger() *logger.Logger {
+func (s *Service) Logger() *logger.Client {
 	return s.logger
+}
+
+func (s *Service) getPortAsString() string {
+	return fmt.Sprintf(":%v", s.port)
 }
 
 func (s *Service) ListenAndServe() error {
@@ -173,4 +228,16 @@ func getEnv(name string, defaultValue string) string {
 	}
 
 	return value
+}
+
+func (db *Service) NewID(prefix string) string {
+	var newID string
+
+	if prefix != "" {
+		prefix += "_"
+	}
+
+	newID = shortuuid.New()
+
+	return prefix + newID
 }

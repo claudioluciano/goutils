@@ -32,7 +32,7 @@ type HTTPResponse struct {
 	Time       int64
 }
 
-type HTTPClient struct {
+type Client struct {
 	Client      *fasthttp.Client
 	baseURI     string
 	contentType string
@@ -52,7 +52,7 @@ type SendRequestOpts struct {
 	Request   *HTTPRequest
 }
 
-func NewHTTPClient(opts ...*NewClientOpts) *HTTPClient {
+func NewClient(opts ...*NewClientOpts) *Client {
 	opt := &NewClientOpts{
 		DefaultContentType: "application/json",
 		Timeout:            30 * time.Second,
@@ -63,7 +63,7 @@ func NewHTTPClient(opts ...*NewClientOpts) *HTTPClient {
 		opt = opts[0]
 	}
 
-	c := &HTTPClient{
+	c := &Client{
 		Client:      &fasthttp.Client{},
 		baseURI:     opt.BaseURI,
 		contentType: opt.DefaultContentType,
@@ -75,7 +75,7 @@ func NewHTTPClient(opts ...*NewClientOpts) *HTTPClient {
 	return c
 }
 
-func (h *HTTPClient) SendRequest(ctx context.Context, opts *SendRequestOpts) (*HTTPResponse, error) {
+func (h *Client) SendRequest(ctx context.Context, opts *SendRequestOpts) (*HTTPResponse, error) {
 	if opts.StartTime == nil {
 		n := time.Now()
 		opts.StartTime = &n
@@ -129,7 +129,7 @@ func getResponseTime(start, end *time.Time) int64 {
 	return end.Sub(*start).Milliseconds()
 }
 
-func (h *HTTPClient) getURI(rURI string) string {
+func (h *Client) getURI(rURI string) string {
 	if strings.HasPrefix(rURI, "http") || strings.HasPrefix(rURI, "https") {
 		return rURI
 	}
