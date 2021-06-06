@@ -54,6 +54,7 @@ func NewClient(opts *NewClientOptions) (*Client, error) {
 	return &Client{
 		mongoClient:    mongoClient,
 		logger:         opts.Logger,
+		errors:         opts.Errors,
 		databaseName:   opts.DatabaseName,
 		collectionName: collectionName,
 	}, nil
@@ -66,6 +67,20 @@ func toSnakeCase(str string) string {
 	snake := matchFirstCap.ReplaceAllString(str, "${1}_${2}")
 	snake = matchAllCap.ReplaceAllString(snake, "${1}_${2}")
 	return strings.ToLower(snake)
+}
+
+func (c *Client) CreateOneIndex(ctx context.Context, data interface{}, opts *options.IndexOptions) error {
+	mod := mongo.IndexModel{
+		Keys:    data,
+		Options: opts,
+	}
+
+	_, err := c.collection().Indexes().CreateOne(ctx, mod)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (c *Client) database() *mongo.Database {
