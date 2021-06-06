@@ -75,11 +75,17 @@ func NewService(opts ...*NewServiceOptions) (*Service, error) {
 		Level: logger.LevelInfo(),
 	})
 
+	errs := errors.NewClient(&errors.ClientOptions{
+		ServiceName: opt.ServiceName,
+		Logger:      lg,
+	})
+
 	svc := &Service{
 		name:        opt.ServiceName,
 		port:        defaultPORT,
 		environment: opt.Environment,
 		logger:      lg,
+		errors:      errs,
 		grpcServer:  grpc.NewServer(),
 	}
 
